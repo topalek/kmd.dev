@@ -2,13 +2,14 @@
 
 namespace app\controllers;
 
+use app\forms\SignupForm;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
-use app\models\LoginForm;
-use app\models\ContactForm;
+use app\forms\LoginForm;
+use app\forms\ContactForm;
 
 class SiteController extends Controller
 {
@@ -124,4 +125,20 @@ class SiteController extends Controller
     {
         return $this->render('about');
     }
+	public function actionCreateUser()
+	{
+		$model = new SignupForm();
+		if ($model->load(Yii::$app->request->post())) {
+			if ($user = $model->signup()) {
+				if (Yii::$app->getUser()->login($user)) {
+					return $this->goHome();
+				}
+			}
+		}
+
+		return $this->render('signup', [
+			'model' => $model,
+		]);
+
+	}
 }
