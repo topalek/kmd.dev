@@ -8,7 +8,6 @@
 namespace app\forms;
 
 use yii\base\Model;
-use app\entities\User;
 
 /**
  * Signup form
@@ -26,39 +25,32 @@ class SignupForm extends Model
 	public function rules()
 	{
 		return [
-			['username', 'trim'],
-			['username', 'required'],
-			['username', 'unique', 'targetClass' => 'app\entities\User', 'message' => 'Это имя уже занято. Вберите другое'],
-			['username', 'string', 'min' => 2, 'max' => 255],
+			[['username'], 'trim'],
+			[['username'], 'required', 'message' => 'Имя не может быть пустым'],
+			[['username'], 'unique', 'targetClass' => 'app\entities\User', 'message' => 'Это имя уже занято. Укажите другое'],
+			[['username'], 'string',
+				'min' => 2, 'max' => 255,
+				'message' => 'Имя не может быть меньше 2 символов',
+				'tooLong' => 'Имя не может быть больше 255 символов.',
+				'tooShort' => 'Имя не может быть менее 2-x символов.'
+			],
 
-			['email', 'trim'],
-			['email', 'required'],
-			['email', 'email'],
-			['email', 'string', 'max' => 255],
-			['email', 'unique', 'targetClass' => 'app\entities\User', 'message' => 'This email address has already been taken.'],
-
-			['password', 'required'],
-			['password', 'string', 'min' => 4],
+			[['email'], 'trim'],
+			[['email'], 'required', 'message' => 'Email не может быть пустым'],
+			[['email'], 'email'],
+			[['email'], 'string', 'max' => 255],
+			[['email'], 'unique', 'targetClass' => 'app\entities\User', 'message' => 'Этот email уже занят. Укажите другой'],
+			[['password'], 'required', 'message' => 'Пароль не может быть пустым'],
+			[['password'], 'string', 'min' => 4, 'message' => 'Пароль не может быть менее 4 символов'],
 		];
 	}
 
-	/**
-	 * Signs user up.
-	 *
-	 * @return User|null the saved model or null if saving fails
-	 */
-	public function signup()
+	public function attributeLabels()
 	{
-		if (!$this->validate()) {
-			return null;
-		}
-
-		$user = new User();
-		$user->username = $this->username;
-		$user->email = $this->email;
-		$user->setPassword($this->password);
-		$user->generateAuthKey();
-
-		return $user->save() ? $user : null;
+		return [
+			'username' => 'Имя пользователя',
+			'email'    => 'Email',
+			'password' => 'Пароль',
+		];
 	}
 }

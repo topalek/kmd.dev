@@ -2,6 +2,9 @@
 
 namespace app\modules\admin\controllers;
 
+use app\forms\SignupForm;
+use app\services\auth\SignupServiсe;
+use Yii;
 use yii\web\Controller;
 
 /**
@@ -18,4 +21,25 @@ class AdminController extends Controller
     {
         return $this->render('index');
     }
+	public function actionCreateUser()
+	{
+		$form = new SignupForm();
+		if ($form->load(Yii::$app->request->post()) && $form->validate()) {
+
+			try {
+				$user = (new SignupServiсe())->signup($form);
+				if (Yii::$app->getUser()->login($user)) {
+					return $this->goHome();
+				}
+
+			} catch (\DomainException $e) {
+				Yii::$app->session->setFlash('error', $e->getMessage());
+			}
+		}
+
+		return $this->render('signup', [
+			'model' => $form,
+		]);
+
+	}
 }
