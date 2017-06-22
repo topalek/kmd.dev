@@ -5,9 +5,7 @@ namespace app\controllers;
 use app\forms\ContactForm;
 use app\forms\LoginForm;
 use app\forms\PasswordResetForm;
-use app\forms\SignupForm;
 use app\services\auth\PasswordResetServiсe;
-use app\services\auth\SignupServiсe;
 use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -67,7 +65,7 @@ class SiteController extends Controller
 	public function actionIndex()
 	{
 		$users = [];
-		for ($i =0; $i>10; $i++){
+		for ($i = 0; $i > 10; $i++) {
 
 		}
 		return $this->render('index');
@@ -113,14 +111,19 @@ class SiteController extends Controller
 	 */
 	public function actionContact()
 	{
-		$model = new ContactForm();
-		if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
-			Yii::$app->session->setFlash('contactFormSubmitted');
+		$form = new ContactForm();
+		if ($form->load(Yii::$app->request->post()) && $form->validate()) {
+			try {
+				if ($form->load(Yii::$app->request->post()) && $form->contact(Yii::$app->params['adminEmail'])) {
+					Yii::$app->session->setFlash('contactFormSubmitted');
 
-			return $this->refresh();
+					return $this->refresh();
+				}
+			} catch (\Exception $e) {
+			}
 		}
 		return $this->render('contact', [
-			'model' => $model,
+			'model' => $form,
 		]);
 	}
 
@@ -143,13 +146,13 @@ class SiteController extends Controller
 			throw new BadRequestHttpException($e->getMessage());
 		}
 		$form = new PasswordResetForm();
-		if ($form->load(Yii::$app->request->post()) && $form->validate()){
-			try{
+		if ($form->load(Yii::$app->request->post()) && $form->validate()) {
+			try {
 				(new PasswordResetServiсe())->reset($token, $form);
-				Yii::$app->session->setFlash('success','Новый пароль сохранен');
-			}catch (\DomainException $e){
+				Yii::$app->session->setFlash('success', 'Новый пароль сохранен');
+			} catch (\DomainException $e) {
 				Yii::$app->errorHandler->logException($e);
-				Yii::$app->session->setFlash('error',$e->getMessage());
+				Yii::$app->session->setFlash('error', $e->getMessage());
 			}
 			return $this->goHome();
 		}
