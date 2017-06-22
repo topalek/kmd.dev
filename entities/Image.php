@@ -14,6 +14,7 @@ namespace app\entities;
 
 use yii\db\ActiveRecord;
 use yii\web\UploadedFile;
+use yiidreamteam\upload\ImageUploadBehavior;
 
 class Image extends ActiveRecord
 {
@@ -38,5 +39,23 @@ class Image extends ActiveRecord
 	public static function tableName()
 	{
 		return '{{%image}}';
+	}
+	public function behaviors(): array
+	{
+		return [
+			[
+				'class' => ImageUploadBehavior::className(),
+				'attribute' => 'file',
+				'createThumbsOnRequest' => true,
+				'filePath' => '@web/uploads/products/[[attribute_product_id]]/[[id]].[[extension]]',
+				'fileUrl' => '@web/uploads/products/[[attribute_product_id]]/[[id]].[[extension]]',
+				'thumbPath' => '@web/uploads/thumbs/products/[[attribute_product_id]]/[[profile]]_[[id]].[[extension]]',
+				'thumbUrl' => '@seb/uploads/thumbs/products/[[attribute_product_id]]/[[profile]]_[[id]].[[extension]]',
+				'thumbs' => [
+					'admin' => ['width' => 100, 'height' => 70],
+					'thumb' => ['width' => 640, 'height' => 480],
+				],
+			],
+		];
 	}
 }

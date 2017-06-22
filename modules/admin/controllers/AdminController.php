@@ -2,9 +2,13 @@
 
 namespace app\modules\admin\controllers;
 
+use app\forms\PasswordResetForm;
+use app\forms\PasswordResetRequestForm;
 use app\forms\SignupForm;
+use app\services\auth\PasswordResetServiсe;
 use app\services\auth\SignupServiсe;
 use Yii;
+use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 
 /**
@@ -12,7 +16,7 @@ use yii\web\Controller;
  */
 class AdminController extends Controller
 {
-	public $layout = 'main';
+
     /**
      * Renders the index view for the module
      * @return string

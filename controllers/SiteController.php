@@ -4,11 +4,14 @@ namespace app\controllers;
 
 use app\forms\ContactForm;
 use app\forms\LoginForm;
+use app\forms\PasswordResetForm;
 use app\forms\SignupForm;
+use app\services\auth\PasswordResetServiсe;
 use app\services\auth\SignupServiсe;
 use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
+use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\web\Response;
 
@@ -63,6 +66,10 @@ class SiteController extends Controller
 	 */
 	public function actionIndex()
 	{
+		$users = [];
+		for ($i =0; $i>10; $i++){
+
+		}
 		return $this->render('index');
 	}
 
@@ -125,6 +132,30 @@ class SiteController extends Controller
 	public function actionAbout()
 	{
 		return $this->render('about');
+	}
+
+	public function actionResetPassword($token)
+	{
+		$service = new PasswordResetServiсe();
+		try {
+			$service->validateToken($token);
+		} catch (\DomainException $e) {
+			throw new BadRequestHttpException($e->getMessage());
+		}
+		$form = new PasswordResetForm();
+		if ($form->load(Yii::$app->request->post()) && $form->validate()){
+			try{
+				(new PasswordResetServiсe())->reset($token, $form);
+				Yii::$app->session->setFlash('success','Новый пароль сохранен');
+			}catch (\DomainException $e){
+				Yii::$app->errorHandler->logException($e);
+				Yii::$app->session->setFlash('error',$e->getMessage());
+			}
+			return $this->goHome();
+		}
+		return $this->render('forms/resetPassword', [
+			'model' => $form,
+		]);
 	}
 
 }

@@ -5,6 +5,7 @@ namespace app\entities;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
+use yii\helpers\Inflector;
 use yii\web\UploadedFile;
 
 /**
@@ -16,7 +17,6 @@ use yii\web\UploadedFile;
  * @var string $content
  * @var string $short_content
  * @var string $type
- * @var string $image
  * @var string $main_photo_id
  * @var integer $category_id
  * @var integer $status
@@ -26,6 +26,8 @@ use yii\web\UploadedFile;
  * @var Image $image
  *
  * @property Image[] $images
+ * @property Category $category
+ * @property Category[] $categories
  * @property Image $mainPhoto
  *
  */
@@ -33,6 +35,20 @@ class Post extends \yii\db\ActiveRecord
 {
 	const STATUS_DRAFT = 0;
 	const STATUS_ACTIVE = 1;
+
+	public function create($title, $short_content, $content, $category_id,$type): self
+	{
+		$post = new static();
+		$post->title = $title;
+		$post->slug = Inflector::slug($title);
+		$post->short_content = $short_content;
+		$post->content = $content;
+		$post->type = $type;
+		$post->category_id = $category_id;
+		$post->created_at = time();
+		$post->status = self::STATUS_DRAFT;
+		return $post;
+	}
     /**
      * @inheritdoc
      */
@@ -41,19 +57,7 @@ class Post extends \yii\db\ActiveRecord
         return '{{%post}}';
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['slug', 'title'], 'required'],
-            [['content', 'short_content'], 'string'],
-            [['category_id', 'status'], 'integer'],
-            [['slug', 'title', 'type','image'], 'string', 'max' => 255],
-            [['slug'], 'unique'],
-        ];
-    }
+
 	public function addImage(UploadedFile $file): void
 	{
 		$images = $this->images;
