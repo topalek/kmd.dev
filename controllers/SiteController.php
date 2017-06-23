@@ -6,6 +6,7 @@ use app\forms\ContactForm;
 use app\forms\LoginForm;
 use app\forms\PasswordResetForm;
 use app\services\auth\PasswordResetServiсe;
+use app\services\contact\ContactService;
 use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -51,7 +52,8 @@ class SiteController extends Controller
 				'class' => 'yii\web\ErrorAction',
 			],
 			'captcha' => [
-				'class'           => 'yii\captcha\CaptchaAction',
+				//'class'           => 'yii\captcha\CaptchaAction',
+				'class'           => 'app\common\NumericCaptcha',
 				'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
 			],
 		];
@@ -112,14 +114,16 @@ class SiteController extends Controller
 	public function actionContact()
 	{
 		$form = new ContactForm();
+		$service = new ContactService();
 		if ($form->load(Yii::$app->request->post()) && $form->validate()) {
 			try {
-				if ($form->load(Yii::$app->request->post()) && $form->contact(Yii::$app->params['adminEmail'])) {
-					Yii::$app->session->setFlash('contactFormSubmitted');
+				$service->send($form);
+				Yii::$app->session->setFlash('success', 'Ваше сообщение отправленно. в ближаайшее время мы с Вами свяжемся');
+				return $this->goHome();
 
-					return $this->refresh();
-				}
 			} catch (\Exception $e) {
+				Yii::$app->errorHandler->logException($e);
+				Yii::$app->session->setFlash('error', $e->getMessage());
 			}
 		}
 		return $this->render('contact', [
@@ -148,7 +152,7 @@ class SiteController extends Controller
 		$form = new PasswordResetForm();
 		if ($form->load(Yii::$app->request->post()) && $form->validate()) {
 			try {
-				(new PasswordResetServiсe())->reset($token, $form);
+				$service->reset($token, $form);
 				Yii::$app->session->setFlash('success', 'Новый пароль сохранен');
 			} catch (\DomainException $e) {
 				Yii::$app->errorHandler->logException($e);
