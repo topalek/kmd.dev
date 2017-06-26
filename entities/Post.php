@@ -2,6 +2,7 @@
 
 namespace app\entities;
 
+use lhs\Yii2SaveRelationsBehavior\SaveRelationsBehavior;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
@@ -143,9 +144,10 @@ class Post extends \yii\db\ActiveRecord
 	{
 		return [
 			TimestampBehavior::className(),
-			//[
-			//	'class' => SaveRelationsBehavior::className();
-			//],
+			'saveRelations' => [
+				'class'     => SaveRelationsBehavior::className(),
+				'relations' => ['user', 'image']
+			],
 		];
 	}
 
